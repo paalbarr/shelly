@@ -1,12 +1,13 @@
 # Shelly
 
-A collection of standalone shell scripts for macOS/Linux system administration: cleaning up leftover software, monitoring disk space, benchmarking network throughput, and backing up/controlling VirtualBox virtual machines.
+A collection of standalone shell scripts for macOS/Linux system administration: cleaning up leftover software, monitoring disk space, benchmarking network throughput, discovering a site's links, and backing up/controlling VirtualBox virtual machines.
 
 Each script is self-contained (no shared libraries) and documented in its own header comment. This README summarizes what each one does and how to run it.
 
 ## Contents
 
 - [appcleanup.sh](#appcleanupsh)
+- [crawl-links.sh](#crawl-linkssh)
 - [diskalert.sh](#diskalertsh)
 - [netmarks.sh](#netmarkssh)
 - [vboxbackup.sh](#vboxbackupsh)
@@ -49,6 +50,44 @@ Nothing is permanently deleted by default — matches are moved to `~/.Trash` (u
 | `--details` | Name-search: show references without removing. `--scan`: full path breakdown instead of the summary table |
 | `--force` | Permanently delete instead of moving to Trash/backup — cannot be undone |
 | `-h`, `--help` | Show usage |
+
+---
+
+## crawl-links.sh
+
+**Platform:** Linux/macOS
+
+Discovers and lists every navigable link of a site using `wget`'s recursive spider mode, then extracts the unique URLs found into a plain text file alongside the full crawl log. `robots.txt` is respected by default.
+
+### Requirements
+
+- `wget` (built with `--debug` support — most distro builds have it; BusyBox/Alpine's minimal wget does not)
+- `grep`, `sed`, `awk`
+
+### Usage
+
+```bash
+./crawl-links.sh https://example.com                                  # crawl, depth 3 (default)
+./crawl-links.sh https://example.com 5                                # crawl, depth 5
+./crawl-links.sh --no-robots https://example.com
+./crawl-links.sh --span-hosts https://example.com
+./crawl-links.sh --allow-domains=example.com,cdn.example.com https://example.com
+```
+
+### Options
+
+| Option | Description |
+|---|---|
+| `--no-robots` | Ignore `robots.txt` (respected by default) |
+| `--span-hosts` | Follow allowed subdomains/hosts |
+| `--allow-domains=a,b,c` | Exact list of allowed domains (overrides the automatic apex/`www.` detection) |
+
+### Output
+
+| File | Contents |
+|---|---|
+| `links_<domain>/links.txt` | Unique URLs discovered (http/https) |
+| `links_<domain>/spider.log` | Full wget debug log |
 
 ---
 
